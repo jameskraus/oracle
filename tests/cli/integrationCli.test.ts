@@ -131,6 +131,35 @@ describe("oracle CLI integration", () => {
   );
 
   test(
+    "rejects the API-only GPT-5.6 Sol Pro alias in browser mode",
+    async () => {
+      const oracleHome = await mkdtemp(path.join(os.tmpdir(), "oracle-browser-pro-alias-"));
+      const result = await execCli(
+        [
+          "--engine",
+          "browser",
+          "--model",
+          "gpt-5.6-sol-pro",
+          "--dry-run",
+          "-p",
+          "Reject the API-only Pro alias in browser mode.",
+        ],
+        {
+          env: { ...process.env, ORACLE_HOME_DIR: oracleHome },
+          timeout: INTEGRATION_TIMEOUT,
+        },
+      );
+
+      expect(result.code).toBe(1);
+      expect(`${result.stdout}\n${result.stderr}`).toContain(
+        "gpt-5.6-sol-pro is API-only because reasoning.mode=pro",
+      );
+      await rm(oracleHome, { recursive: true, force: true });
+    },
+    INTEGRATION_TIMEOUT,
+  );
+
+  test(
     "SIGINT exits promptly",
     async () => {
       const oracleHome = await mkdtemp(path.join(os.tmpdir(), "oracle-sigint-"));

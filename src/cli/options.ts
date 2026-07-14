@@ -3,7 +3,7 @@ import { parseDuration } from "../duration.js";
 import path from "node:path";
 import fg from "fast-glob";
 import type { ModelName, PreviewMode } from "../oracle.js";
-import { DEFAULT_MODEL, MODEL_CONFIGS } from "../oracle/config.js";
+import { DEFAULT_BROWSER_MODEL, DEFAULT_MODEL, MODEL_CONFIGS } from "../oracle/config.js";
 import { normalizeThinkingTimeLevel } from "../oracle/thinkingTime.js";
 import type { ThinkingTimeLevel } from "../oracle/types.js";
 
@@ -320,7 +320,7 @@ export function isGpt56BrowserLabel(modelValue: string): boolean {
 export function inferModelFromLabel(modelValue: string): ModelName {
   const normalized = normalizeModelOption(modelValue).toLowerCase();
   if (!normalized) {
-    return DEFAULT_MODEL;
+    return DEFAULT_BROWSER_MODEL;
   }
   if (normalized in MODEL_CONFIGS) {
     return normalized as ModelName;
@@ -426,7 +426,7 @@ export function inferModelFromLabel(modelValue: string): ModelName {
     return "gpt-5.1-pro";
   }
   if (normalized.includes("pro")) {
-    return DEFAULT_MODEL;
+    return DEFAULT_BROWSER_MODEL;
   }
   if (normalized.includes("5.1") || normalized.includes("5_1")) {
     return "gpt-5.1";

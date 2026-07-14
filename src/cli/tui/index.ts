@@ -10,6 +10,7 @@ import {
   type ModelName,
   type RunOracleOptions,
 } from "../../oracle.js";
+import { DEFAULT_BROWSER_MODEL } from "../../oracle/config.js";
 import { renderMarkdownAnsi } from "../markdownRenderer.js";
 import type {
   SessionMetadata,
@@ -386,8 +387,12 @@ async function askOracleFlow(version: string, userConfig: UserConfig): Promise<v
       name: "model",
       type: "select",
       message: "Model",
-      default: DEFAULT_MODEL,
-      choices: modelChoices,
+      default: (answers: WizardAnswers & { mode?: SessionMode }) =>
+        answers.mode === "browser" ? DEFAULT_BROWSER_MODEL : DEFAULT_MODEL,
+      choices: (answers: WizardAnswers & { mode?: SessionMode }) =>
+        answers.mode === "browser"
+          ? modelChoices.filter((model) => model !== "gpt-5.6-sol-pro")
+          : modelChoices,
     },
     {
       name: "models",

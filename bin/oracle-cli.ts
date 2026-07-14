@@ -16,7 +16,7 @@ import { resolveDashPrompt } from "../src/cli/stdin.js";
 import chalk from "chalk";
 import type { SessionMetadata, SessionMode, BrowserSessionConfig } from "../src/sessionStore.js";
 import { sessionStore, pruneOldSessions } from "../src/sessionStore.js";
-import { DEFAULT_MODEL, MODEL_CONFIGS } from "../src/oracle/config.js";
+import { DEFAULT_BROWSER_MODEL, DEFAULT_MODEL, MODEL_CONFIGS } from "../src/oracle/config.js";
 import { isKnownModel, resolveOverriddenApiModel } from "../src/oracle/modelResolver.js";
 import type {
   ApiProviderMode,
@@ -376,7 +376,7 @@ program.hook("preAction", async (thisCommand) => {
 program
   .name("oracle")
   .description(
-    "One-shot GPT-5.5 Pro / GPT-5.5 / GPT-5.1 Codex tool for hard questions that benefit from large file context and server-side search.",
+    "One-shot GPT-5.6 Sol Pro and multi-model tool for hard questions that benefit from large file context and server-side search.",
   )
   .version(VERSION)
   .argument("[prompt]", "Prompt text (shorthand for --prompt).")
@@ -435,7 +435,7 @@ program
   .option("-s, --slug <words>", "Custom session slug (3-5 words).")
   .option(
     "-m, --model <model>",
-    'Model to target (gpt-5.5-pro default). GPT-5.6 aliases: gpt-5.6 and gpt-5.6-sol (OpenAI API or ChatGPT browser), plus gpt-5.6-sol-pro (OpenAI API-only). Also gpt-5.5, gpt-5.4-pro, gpt-5.4, gpt-5.1-pro, gpt-5-pro, gpt-5.1, gpt-5.1-codex API-only, gpt-5.2, gpt-5.2-instant, gpt-5.2-pro, gemini-3.1-flash-lite, gemini-3.5-flash, gemini-3.1-pro, legacy gemini-3-pro, claude-4.6-sonnet, claude-4.1-opus, or ChatGPT labels like "5.5 Pro" / "5.2 Thinking" for browser runs).',
+    'Model to target (gpt-5.6-sol-pro default; OpenAI API-only). GPT-5.6 aliases: gpt-5.6 and gpt-5.6-sol (OpenAI API or ChatGPT browser). Also gpt-5.5-pro, gpt-5.5, gpt-5.4-pro, gpt-5.4, gpt-5.1-pro, gpt-5-pro, gpt-5.1, gpt-5.1-codex API-only, gpt-5.2, gpt-5.2-instant, gpt-5.2-pro, gemini-3.1-flash-lite, gemini-3.5-flash, gemini-3.1-pro, legacy gemini-3-pro, claude-4.6-sonnet, claude-4.1-opus, or ChatGPT labels like "5.5 Pro" / "5.2 Thinking" for browser runs).',
     normalizeModelOption,
   )
   .addOption(
@@ -1913,12 +1913,22 @@ async function runRootCommand(options: CliOptions): Promise<void> {
     ? Array.from(new Set(options.models!.map((entry) => resolveApiModel(entry))))
     : [];
   const cliModelArg =
-    normalizeModelOption(options.model) || (multiModelProvided ? "" : DEFAULT_MODEL);
+    normalizeModelOption(options.model) ||
+    (multiModelProvided ? "" : engine === "browser" ? DEFAULT_BROWSER_MODEL : DEFAULT_MODEL);
   const resolvedModelCandidate: ModelName = multiModelProvided
     ? normalizedMultiModels[0]
     : engine === "browser"
       ? inferModelFromLabel(cliModelArg || DEFAULT_MODEL)
       : resolveApiModel(cliModelArg || DEFAULT_MODEL);
+  if (
+    engine === "browser" &&
+    normalizedMultiModels.length === 0 &&
+    resolvedModelCandidate === "gpt-5.6-sol-pro"
+  ) {
+    throw new Error(
+      "gpt-5.6-sol-pro is API-only because reasoning.mode=pro is an OpenAI Responses API setting. Re-run with --engine api.",
+    );
+  }
   const primaryModelCandidate = normalizedMultiModels[0] ?? resolvedModelCandidate;
   const isGemini = primaryModelCandidate.startsWith("gemini");
   const isCodex = primaryModelCandidate.startsWith("gpt-5.1-codex");

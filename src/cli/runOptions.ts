@@ -1,5 +1,6 @@
 import type { RunOracleOptions, ModelName, AzureOptions, ModelOverridesConfig } from "../oracle.js";
 import { DEFAULT_MODEL, MODEL_CONFIGS } from "../oracle.js";
+import { DEFAULT_BROWSER_MODEL } from "../oracle/config.js";
 import type { UserConfig } from "../config.js";
 import type { EngineMode } from "./engine.js";
 import { resolveEngine } from "./engine.js";
@@ -57,9 +58,16 @@ export function resolveRunOptionsFromConfig({
     .map((entry) => normalizeModelOption(entry))
     .filter(Boolean);
 
-  const cliModelArg = normalizeModelOption(model ?? userConfig?.model) || DEFAULT_MODEL;
+  const configuredModel = normalizeModelOption(model ?? userConfig?.model);
+  const cliModelArg =
+    configuredModel || (resolvedEngine === "browser" ? DEFAULT_BROWSER_MODEL : DEFAULT_MODEL);
   const apiModel = resolveApiModel(cliModelArg);
-  if (browserEngineRequested && apiModel === "gpt-5.6-sol-pro") {
+  if (
+    resolvedEngine === "browser" &&
+    configuredModel &&
+    normalizedRequestedModels.length === 0 &&
+    apiModel === "gpt-5.6-sol-pro"
+  ) {
     throw new PromptValidationError(
       "gpt-5.6-sol-pro is API-only because reasoning.mode=pro is an OpenAI Responses API setting. Re-run with --engine api.",
       { engine: "browser", model: apiModel },

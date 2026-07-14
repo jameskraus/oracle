@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 import type { UserConfig } from "../../../src/config.js";
-import { DEFAULT_MODEL } from "../../../src/oracle/config.js";
+import { DEFAULT_BROWSER_MODEL, DEFAULT_MODEL } from "../../../src/oracle/config.js";
 import type { RunOracleOptions } from "../../../src/oracle.js";
 
 const promptMock = vi.fn();
@@ -90,6 +90,32 @@ describe("askOracleFlow", () => {
 
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Cancelled"));
     expect(performSessionRunMock).not.toHaveBeenCalled();
+  });
+
+  test("uses engine-specific model defaults", async () => {
+    promptMock.mockResolvedValue({
+      promptInput: "",
+      mode: "api",
+      model: DEFAULT_MODEL,
+      files: [],
+    });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    await tui.askOracleFlow("0.4.1", {});
+
+    const questions = promptMock.mock.calls[0]?.[0] as Array<{
+      name?: string;
+      default?: unknown;
+      choices?: unknown;
+    }>;
+    const modelQuestion = questions.find((question) => question.name === "model");
+    const resolveDefault = modelQuestion?.default as (answers: { mode: string }) => string;
+    const resolveChoices = modelQuestion?.choices as (answers: { mode: string }) => string[];
+    expect(resolveDefault({ mode: "api" })).toBe(DEFAULT_MODEL);
+    expect(resolveDefault({ mode: "browser" })).toBe(DEFAULT_BROWSER_MODEL);
+    expect(resolveChoices({ mode: "browser" })).not.toContain("gpt-5.6-sol-pro");
+
+    logSpy.mockRestore();
   });
 
   test("runs happy path and calls performSessionRun", async () => {

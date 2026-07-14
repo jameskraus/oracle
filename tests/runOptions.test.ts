@@ -7,12 +7,22 @@ describe("resolveRunOptionsFromConfig", () => {
   const basePrompt = "This prompt is comfortably above twenty characters.";
 
   it("uses config engine when none provided and env lacks OPENAI_API_KEY", () => {
-    const { resolvedEngine } = resolveRunOptionsFromConfig({
+    const { resolvedEngine, runOptions } = resolveRunOptionsFromConfig({
       prompt: basePrompt,
       userConfig: { engine: "browser" },
       env: {},
     });
     expect(resolvedEngine).toBe("browser");
+    expect(runOptions.model).toBe("gpt-5.5-pro");
+  });
+
+  it("keeps the browser default when no engine, model, or API key is configured", () => {
+    const { resolvedEngine, runOptions } = resolveRunOptionsFromConfig({
+      prompt: basePrompt,
+      env: {},
+    });
+    expect(resolvedEngine).toBe("browser");
+    expect(runOptions.model).toBe("gpt-5.5-pro");
   });
 
   it("prefers explicit engine over config", () => {
@@ -47,10 +57,12 @@ describe("resolveRunOptionsFromConfig", () => {
     expect(runOptions.model).toBe("gemini-3.1-pro");
   });
 
-  it("defaults to gpt-5.5-pro when model not provided", () => {
+  it("defaults API runs to GPT-5.6 Sol Pro when model not provided", () => {
     const { runOptions } = resolveRunOptionsFromConfig({
       prompt: basePrompt,
+      engine: "api",
     });
+    expect(DEFAULT_MODEL).toBe("gpt-5.6-sol-pro");
     expect(runOptions.model).toBe(DEFAULT_MODEL);
   });
 
