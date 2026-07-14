@@ -9,6 +9,7 @@ let countTokensAnthropicImpl: ((input: string) => number) | undefined;
 
 export const DEFAULT_MODEL: ModelName = "gpt-5.5-pro";
 export const PRO_MODELS = new Set<ProModelName>([
+  "gpt-5.6-sol-pro",
   "gpt-5.5-pro",
   "gpt-5.4-pro",
   "gpt-5.1-pro",
@@ -46,6 +47,18 @@ const countTokensAnthropic: TokenizerFn = (input: unknown): number => {
 const GPT_5_6_BASE_RATE_INPUT_LIMIT = 272_000;
 
 export const MODEL_CONFIGS: Record<KnownModelName, ModelConfig> = {
+  "gpt-5.6-sol-pro": {
+    model: "gpt-5.6-sol-pro",
+    apiModel: "gpt-5.6-sol",
+    provider: "openai",
+    tokenizer: countTokensGpt5 as TokenizerFn,
+    inputLimit: GPT_5_6_BASE_RATE_INPUT_LIMIT,
+    pricing: {
+      inputPerToken: 5 / 1_000_000,
+      outputPerToken: 30 / 1_000_000,
+    },
+    reasoning: { effort: "xhigh", mode: "pro" },
+  },
   "gpt-5.6": {
     model: "gpt-5.6",
     provider: "openai",

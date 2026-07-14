@@ -1,6 +1,7 @@
 export type TokenizerFn = (input: unknown, options?: Record<string, unknown>) => number;
 
 export type KnownModelName =
+  | "gpt-5.6-sol-pro"
   | "gpt-5.6"
   | "gpt-5.6-sol"
   | "gpt-5.5"
@@ -26,6 +27,7 @@ export type KnownModelName =
 export type ModelName = KnownModelName | (string & {});
 
 export type ProModelName =
+  | "gpt-5.6-sol-pro"
   | "gpt-5.5-pro"
   | "gpt-5.4-pro"
   | "gpt-5.1-pro"
@@ -35,6 +37,12 @@ export type ProModelName =
   | "claude-4.1-opus";
 
 export type ReasoningEffort = "low" | "medium" | "high" | "xhigh";
+export type ReasoningMode = "standard" | "pro";
+
+export interface ReasoningConfig {
+  effort: ReasoningEffort;
+  mode?: ReasoningMode;
+}
 
 export type ThinkingTimeLevel = "light" | "standard" | "extended" | "heavy";
 
@@ -74,7 +82,7 @@ export interface ModelConfig {
     inputPerToken: number;
     outputPerToken: number;
   } | null;
-  reasoning: { effort: ReasoningEffort } | null;
+  reasoning: ReasoningConfig | null;
   supportsBackground?: boolean;
   supportsSearch?: boolean;
   searchToolType?: ToolConfig["type"];
@@ -308,7 +316,7 @@ export interface OracleRequestBody {
     }>;
   }>;
   tools?: ToolConfig[];
-  reasoning?: { effort: ReasoningEffort };
+  reasoning?: ReasoningConfig;
   max_output_tokens?: number;
   background?: boolean;
   store?: boolean;

@@ -28,6 +28,16 @@ describe("applyModelOverride", () => {
     expect(baseConfig.apiModel).not.toBe("gateway-model");
   });
 
+  it("preserves a built-in Pro mode when overriding only reasoning effort", () => {
+    const model = "gpt-5.6-sol-pro";
+    const proConfig = MODEL_CONFIGS[model] as ModelConfig;
+    const result = applyModelOverride(proConfig, model, {
+      [model]: { reasoning: { effort: "high" } },
+    });
+
+    expect(result.reasoning).toEqual({ effort: "high", mode: "pro" });
+  });
+
   it("clears reasoning when override sets reasoning: null", () => {
     const withReasoning: ModelConfig = { ...baseConfig, reasoning: { effort: "xhigh" } };
     const result = applyModelOverride(withReasoning, KNOWN_MODEL, {

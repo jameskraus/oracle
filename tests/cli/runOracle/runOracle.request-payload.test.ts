@@ -4,6 +4,32 @@ import { runOracle } from "@src/oracle.ts";
 import { MockClient, MockStream, buildResponse } from "./helpers.ts";
 
 describe("runOracle request payload", () => {
+  test("sends native GPT-5.6 Sol Pro reasoning mode to the OpenAI Responses API", async () => {
+    const stream = new MockStream([], buildResponse());
+    const client = new MockClient(stream);
+    const logs: string[] = [];
+    await runOracle(
+      {
+        prompt: "Native Pro payload",
+        model: "gpt-5.6-sol-pro",
+        background: false,
+        search: false,
+      },
+      {
+        apiKey: "sk-test",
+        client,
+        log: (msg: string) => logs.push(msg),
+      },
+    );
+
+    expect(client.lastRequest).toMatchObject({
+      model: "gpt-5.6-sol",
+      reasoning: { effort: "xhigh", mode: "pro" },
+    });
+    expect(logs.join("\n")).toContain("gpt-5.6-sol-pro");
+    expect(logs.join("\n")).toContain("(API: gpt-5.6-sol)");
+  });
+
   test("maps gpt-5.1-pro alias to gpt-5.5-pro API model", async () => {
     const stream = new MockStream([], buildResponse());
     const client = new MockClient(stream);

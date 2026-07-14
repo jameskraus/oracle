@@ -258,6 +258,7 @@ describe("resolveApiModel", () => {
   test("keeps GPT-5.6 API ids available for engine-aware validation", () => {
     expect(resolveApiModel("gpt-5.6")).toBe("gpt-5.6");
     expect(resolveApiModel("gpt-5.6-sol")).toBe("gpt-5.6-sol");
+    expect(resolveApiModel("gpt-5.6-sol-pro")).toBe("gpt-5.6-sol-pro");
     expect(resolveApiModel("openai/gpt-5.6")).toBe("openai/gpt-5.6");
   });
 

@@ -59,6 +59,12 @@ export function resolveRunOptionsFromConfig({
 
   const cliModelArg = normalizeModelOption(model ?? userConfig?.model) || DEFAULT_MODEL;
   const apiModel = resolveApiModel(cliModelArg);
+  if (browserEngineRequested && apiModel === "gpt-5.6-sol-pro") {
+    throw new PromptValidationError(
+      "gpt-5.6-sol-pro is API-only because reasoning.mode=pro is an OpenAI Responses API setting. Re-run with --engine api.",
+      { engine: "browser", model: apiModel },
+    );
+  }
   // Browser label inference is intentionally engine-scoped: API model ids such as
   // gpt-5.6-luna must remain provider values even though browser mode rejects
   // unrecognized GPT-5.6 picker variants.

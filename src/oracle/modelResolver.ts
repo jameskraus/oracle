@@ -314,7 +314,10 @@ export function applyModelOverride(
       typeof reasoning.effort === "string" &&
       VALID_REASONING_EFFORTS.includes(reasoning.effort as ReasoningEffort)
     ) {
-      result.reasoning = { effort: reasoning.effort as ReasoningEffort };
+      result.reasoning = {
+        ...(result.reasoning ?? {}),
+        effort: reasoning.effort as ReasoningEffort,
+      };
     }
     // Malformed reasoning override is ignored (base value preserved).
   }
